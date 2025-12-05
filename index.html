@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>ChoxyPop App</title>
+
+  <link rel="icon" href="icon-512.png" />
+
+  <link rel="manifest" href="manifest.json">
+
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 40px;
+      background: #f4f4f4;
+    }
+    main {
+      max-width: 600px;
+      background: white;
+      border-radius: 16px;
+      padding: 30px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+      text-align: center;
+    }
+  </style>
+
+</head>
+<body>
+
+<main>
+  <h1>ChoxyPop App</h1>
+  <p>Pronto podrás descargar nuestra aplicación oficial aqui, por ahora puedes hacerlo desde nuestra tienda de <a href="https://choxypop.itch.io/app">Itch.io</a>.</p>
+  <p>Estamos preparando la tienda y todos los archivos necesarios.</p>
+</main>
+
+<script>
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("/service-worker.js");
+}
+</script>
+</body>
+</html>

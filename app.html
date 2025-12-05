@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cargando...</title>
+<style>
+  /* Fondo limpio */
+  body {
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background: #ffffff;
+    font-family: Arial, sans-serif;
+  }
+
+  /* Contenedor */
+  .loader-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+
+  /* Texto */
+  .loader-text {
+    font-size: 16px;
+    color: #333;
+  }
+
+  /* Loader */
+  .load-3 .line {
+    width: 6px;
+    height: 18px;
+    margin: 2px;
+    background: #4a4a4a;
+    display: inline-block;
+    border-radius: 3px;
+  }
+
+  .load-3 .line:nth-last-child(1) {
+    animation: loadingC 0.6s 0.1s linear infinite;
+  }
+  .load-3 .line:nth-last-child(2) {
+    animation: loadingC 0.6s 0.2s linear infinite;
+  }
+  .load-3 .line:nth-last-child(3) {
+    animation: loadingC 0.6s 0.3s linear infinite;
+  }
+
+  @keyframes loadingC {
+    0% { height: 8px; opacity: 0.4; }
+    50% { height: 22px; opacity: 1; }
+    100% { height: 8px; opacity: 0.4; }
+  }
+</style>
+
+<script>
+window.onload = () => {
+  // Espera muy breve — 300 ms se siente instantáneo
+  setTimeout(() => {
+    window.location.href = "https://blog.choxypop.com";
+  }, 300);
+};
+</script>
+</head>
+
+<body>
+  <div class="loader-container">
+    <div class="load-3">
+      <div class="line"></div>
+      <div class="line"></div>
+      <div class="line"></div>
+    </div>
+    <div class="loader-text">Cargando…</div>
+  </div>
+</body>
+</html>
