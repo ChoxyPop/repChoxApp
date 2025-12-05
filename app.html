@@ -59,6 +59,28 @@
 </style>
 
 <script>
+  import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-messaging.js";
+
+const messaging = getMessaging();
+
+Notification.requestPermission().then(permission => {
+  if(permission === 'granted') {
+    console.log('Permiso otorgado');
+    getToken(messaging, { vapidKey: 'TU_CLAVE_PUBLICA_VAPID' }).then((currentToken) => {
+      if(currentToken) {
+        console.log('Token de dispositivo:', currentToken);
+        // Aquí puedes guardar el token en tu base de datos para enviar notificaciones después
+      } else {
+        console.log('No se obtuvo token');
+      }
+    }).catch((err) => {
+      console.log('Error al obtener token: ', err);
+    });
+  } else {
+    console.log('Permiso de notificaciones denegado');
+  }
+});
+
 window.onload = () => {
   // Espera muy breve — 300 ms se siente instantáneo
   setTimeout(() => {
