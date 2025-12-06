@@ -59,34 +59,50 @@
 </style>
 
 <script>
-  import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-messaging.js";
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("/firebase-messaging-sw.js")
+    .then(() => console.log("SW de Firebase registrado"))
+    .catch(err => console.log("Error SW Firebase:", err));
+}
+</script>
 
-const messaging = getMessaging();
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-messaging-compat.js"></script>
 
-Notification.requestPermission().then(permission => {
-  if(permission === 'granted') {
-    console.log('Permiso otorgado');
-    getToken(messaging, { vapidKey: 'BOyWq468EsYswfwhSjnDTAtbeNpYZB15q5NoHA22lcRGmjjffJC6oQV2vuj39lvUX9bgY-veHJSXRL1W5IaBxjw' }).then((currentToken) => {
-      if(currentToken) {
-        console.log('Token de dispositivo:', currentToken);
-        // Aquí puedes guardar el token en tu base de datos para enviar notificaciones después
-      } else {
-        console.log('No se obtuvo token');
-      }
-    }).catch((err) => {
-      console.log('Error al obtener token: ', err);
-    });
-  } else {
-    console.log('Permiso de notificaciones denegado');
-  }
-});
+<script>
+  // Inicializar Firebase
+  firebase.initializeApp({
+    apiKey: "AIzaSyBvtawDsDEine7gjyGYxYLkdNAKPEHrzYY",
+    authDomain: "app-choxypop.firebaseapp.com",
+    projectId: "app-choxypop",
+    storageBucket: "app-choxypop.firebasestorage.app",
+    messagingSenderId: "353378084410",
+    appId: "1:353378084410:web:81d295fc4205bde3bfb703"
+  });
 
-window.onload = () => {
-  // Espera muy breve — 300 ms se siente instantáneo
-  setTimeout(() => {
-    window.location.href = "https://blog.choxypop.com";
-  }, 300);
-};
+  const messaging = firebase.messaging();
+
+  // Solicitar permiso de notificaciones
+  Notification.requestPermission().then(permission => {
+    if (permission === 'granted') {
+
+      messaging.getToken({
+        vapidKey: "BOyWq468EsYswfwhSjnDTAtbeNpYZB15q5NoHA22lcRGmjjffJC6oQV2vuj39lvUX9bgY-veHJSXRL1W5IaBxjw"
+      }).then(token => {
+        console.log("Token:", token);
+      }).catch(err => console.log("Error token:", err));
+
+    } else {
+      console.log("Permiso denegado");
+    }
+  });
+
+  // Redirigir
+  window.onload = () => {
+    setTimeout(() => {
+      window.location.href = "https://blog.choxypop.com";
+    }, 300);
+  };
 </script>
 </head>
 
