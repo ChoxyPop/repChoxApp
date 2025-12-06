@@ -3,6 +3,6 @@
       "target": {
         "namespace": "android_app",
         "package_name": "com.choxypop.app",
-        "sha256_cert_fingerprints": ["A3:EA:E4:F9:75:E2:31:6A:2D:A2:ED:A4:A0:E6:D3:A4:1F:A4:56:B2:BE:B5:21:06:75:E7:FE:3C:86:DB"]
+        "sha256_cert_fingerprints": ["1F:58:39:D2:9D:84:50:A9:87:22:C1:73:AA:62:BB:78:FE:93:38:C5:F4:66:C1:D9:D2:1A:BF:21:AD:7D:9F:1D"]
       }
     }]
