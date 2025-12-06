@@ -1,9 +1,17 @@
+// service-worker.js (REEMPLAZA el actual por esto)
+importScripts("https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.sw.js");
+
+const CACHE_NAME = "choxypop-app-v1";
+
 self.addEventListener("install", e => {
   e.waitUntil(
-    caches.open("choxypop-app").then(cache => {
+    caches.open(CACHE_NAME).then(cache => {
       return cache.addAll([
         "/app.html",
-        "/manifest.json"
+        "/manifest.json",
+        "/index.html",
+        "/icon-192x192.png",
+        "/icon-512x512.png"
       ]);
     })
   );
