@@ -2,7 +2,7 @@
   "name": "ChoxyPop App",
   "short_name": "ChoxyPop App",
   "start_url": "/app.html",
-  "display": "fullscreen",
+  "display": "standalone",
   "background_color": "#4a84ff",
   "theme_color": "#4a84ff",
   "icons": [
@@ -23,7 +23,8 @@
     {
       "src": "/screenshots/home.png",
       "sizes": "1366x768",
-      "type": "image/png"
+      "type": "image/png",
+      "form_factor": "narrow"
     }
   ],
   "dir": "ltr",
