@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>ChoxyPop – App</title>
 
 <style>
@@ -22,6 +22,9 @@
     border: none;
   }
 
+  /* Utility */
+  .hidden { display: none !important; }
+
   /* Popup */
   #popupWrapper {
     position: fixed;
@@ -33,7 +36,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 20;
+    z-index: 9999;
     animation: fadeIn .3s ease;
   }
 
@@ -91,12 +94,12 @@
 <body>
 
 <!-- Iframe del blog -->
-<iframe id="blogFrame"></iframe>
+<iframe id="blogFrame" title="ChoxyPop blog"></iframe>
 
-<!-- POPUP -->
-<div id="popupWrapper" class="hidden">
-  <div class="popup-card">
-    <h2>Antes de continuar…</h2>
+<!-- POPUP (inicia hidden si el usuario ya eligió) -->
+<div id="popupWrapper" class="hidden" aria-hidden="true">
+  <div class="popup-card" role="dialog" aria-modal="true" aria-labelledby="popup-title">
+    <h2 id="popup-title">Antes de continuar…</h2>
     <p>Activa las notificaciones para no perderte nada 💖</p>
     <button id="continueBtn">Continuar</button>
     <button id="noShowBtn" class="btn-secondary">No volver a mostrar</button>
@@ -107,47 +110,63 @@
 /* ------------------------------------------
    1. Cargar el blog en el iframe
 -------------------------------------------*/
-
 function loadIframe() {
     const params = new URLSearchParams(location.search);
     const targetURL = params.get("url") || "https://blog.choxypop.com";
-
     document.getElementById("blogFrame").src = targetURL;
 }
 loadIframe();
 
-
 /* ------------------------------------------
-   2. Control del popup
+   2. Control del popup (corrección)
 -------------------------------------------*/
-
 const popup = document.getElementById("popupWrapper");
+const continueBtn = document.getElementById("continueBtn");
+const noShowBtn = document.getElementById("noShowBtn");
+
 const NEVER_SHOW = localStorage.getItem("noShowNotificationPopup") === "1";
 
-// Mostrar u ocultar popup
+// Mostrar u ocultar popup según localStorage
 if (!NEVER_SHOW) {
   popup.classList.remove("hidden");
+  popup.setAttribute("aria-hidden", "false");
+} else {
+  popup.classList.add("hidden");
+  popup.setAttribute("aria-hidden", "true");
 }
 
-// Botón continuar
-document.getElementById("continueBtn").onclick = () => {
-  popup.classList.add("hidden");
-};
+// Simple debounce para evitar doble click
+function safeClick(handler) {
+  let running = false;
+  return (...args) => {
+    if (running) return;
+    running = true;
+    try { handler(...args); }
+    finally { setTimeout(()=> running=false, 300); }
+  }
+}
 
-// Botón no volver a mostrar
-document.getElementById("noShowBtn").onclick = () => {
+continueBtn.addEventListener("click", safeClick(() => {
+  // Opcional: pedir permiso de OneSignal aquí si querés
+  popup.classList.add("hidden");
+  popup.setAttribute("aria-hidden", "true");
+}));
+
+noShowBtn.addEventListener("click", safeClick(() => {
   localStorage.setItem("noShowNotificationPopup", "1");
   popup.classList.add("hidden");
-};
-
+  popup.setAttribute("aria-hidden", "true");
+}));
 
 /* ------------------------------------------
    3. Navegación sincronizada desde iframe
+   (si el blog envía postMessage("navigate:URL"))
 -------------------------------------------*/
-
 window.addEventListener("message", e => {
+    // por seguridad puedes validar origen:
+    // if (e.origin !== "https://blog.choxypop.com") return;
+    if (!e.data || typeof e.data !== "string") return;
     if (!e.data.startsWith("navigate:")) return;
-    
     const newURL = e.data.replace("navigate:", "");
     history.replaceState({}, "", "?url=" + encodeURIComponent(newURL));
 });
