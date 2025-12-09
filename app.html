@@ -3,51 +3,60 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ChoxyPop – Notificaciones</title>
+<title>ChoxyPop – App</title>
 
 <style>
-  body {
+  html, body {
     margin: 0;
     padding: 0;
+    height: 100%;
+    overflow: hidden;
+    font-family: Arial, sans-serif;
+    background: #fff;
+  }
+
+  /* Iframe ocupa toda la pantalla */
+  #blogFrame {
+    width: 100vw;
+    height: 100vh;
+    border: none;
+  }
+
+  /* Popup */
+  #popupWrapper {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0,0,0,0.45);
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
-    background: #ffffff;
-    font-family: Arial, sans-serif;
+    z-index: 20;
+    animation: fadeIn .3s ease;
   }
 
-  .container {
-    max-width: 340px;
-    text-align: center;
-    padding: 20px;
-  }
-
-  .hidden {
-    display: none;
-  }
-
-  .card {
+  .popup-card {
+    width: 330px;
+    background: #fafafa;
     border-radius: 16px;
     padding: 20px;
-    background: #fafafa;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-    animation: fadeIn 0.4s ease;
-  }
-
-  h2 {
-    margin-top: 0;
+    box-shadow: 0 4px 22px rgba(0,0,0,0.2);
+    animation: slideUp .32s ease;
+    text-align: center;
   }
 
   button {
     margin-top: 12px;
     padding: 10px 20px;
     border: none;
-    border-radius: 8px;
+    border-radius: 10px;
     font-size: 15px;
     cursor: pointer;
     background: #ff4ae8;
     color: white;
+    width: 100%;
   }
 
   .btn-secondary {
@@ -55,37 +64,15 @@
     color: #333;
   }
 
-  /* loader */
-  .loader {
-    display: flex;
-    justify-content: center;
-    gap: 6px;
-    margin-bottom: 14px;
-  }
-
-  .line {
-    width: 6px;
-    height: 18px;
-    background: #4a4a4a;
-    border-radius: 3px;
-    animation: loadingC .6s linear infinite;
-  }
-
-  .line:nth-child(1) { animation-delay: .1s; }
-  .line:nth-child(2) { animation-delay: .2s; }
-  .line:nth-child(3) { animation-delay: .3s; }
-
-  @keyframes loadingC {
-    0% { height: 8px; opacity: .4; }
-    50% { height: 22px; opacity: 1; }
-    100% { height: 8px; opacity: .4; }
-  }
-
   @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
     to   { opacity: 1; transform: translateY(0); }
   }
-
 </style>
 
 <!-- OneSignal -->
@@ -103,59 +90,67 @@
 </head>
 <body>
 
-<div class="container">
+<!-- Iframe del blog -->
+<iframe id="blogFrame"></iframe>
 
-  <!-- CARD: mensaje inicial -->
-  <div id="welcomeCard" class="card hidden">
+<!-- POPUP -->
+<div id="popupWrapper" class="hidden">
+  <div class="popup-card">
     <h2>Antes de continuar…</h2>
-    <p>
-      Asegúrate de aceptar las notificaciones para no perderte ningún post ni mensajes bonitos de mi parte 💖
-    </p>
-
+    <p>Activa las notificaciones para no perderte nada 💖</p>
     <button id="continueBtn">Continuar</button>
     <button id="noShowBtn" class="btn-secondary">No volver a mostrar</button>
   </div>
-
-  <!-- CARD: loader -->
-  <div id="loaderCard" class="card">
-    <div class="loader">
-      <div class="line"></div>
-      <div class="line"></div>
-      <div class="line"></div>
-    </div>
-    <p>Cargando…</p>
-  </div>
-
 </div>
 
 <script>
-  const welcomeCard = document.getElementById("welcomeCard");
-  const loaderCard = document.getElementById("loaderCard");
-  const continueBtn = document.getElementById("continueBtn");
-  const noShowBtn = document.getElementById("noShowBtn");
+/* ------------------------------------------
+   1. Cargar el blog en el iframe
+-------------------------------------------*/
 
-  const NEVER_SHOW = localStorage.getItem("noShowNotificationPopup") === "1";
+function loadIframe() {
+    const params = new URLSearchParams(location.search);
+    const targetURL = params.get("url") || "https://blog.choxypop.com";
 
-  // Si el usuario ya eligió "no volver a mostrar", redirige automático
-  if (NEVER_SHOW) {
-    loaderCard.classList.remove("hidden");
-    window.location.href = "https://blog.choxypop.com";
-  } else {
-    // Mostrar tarjeta con el mensaje después de un pequeño retraso
-    setTimeout(() => {
-      loaderCard.classList.add("hidden");
-      welcomeCard.classList.remove("hidden");
-    }, 800);
-  }
+    document.getElementById("blogFrame").src = targetURL;
+}
+loadIframe();
 
-  continueBtn.onclick = () => {
-    window.location.href = "https://blog.choxypop.com";
-  };
 
-  noShowBtn.onclick = () => {
-    localStorage.setItem("noShowNotificationPopup", "1");
-    window.location.href = "https://blog.choxypop.com";
-  };
+/* ------------------------------------------
+   2. Control del popup
+-------------------------------------------*/
+
+const popup = document.getElementById("popupWrapper");
+const NEVER_SHOW = localStorage.getItem("noShowNotificationPopup") === "1";
+
+// Mostrar u ocultar popup
+if (!NEVER_SHOW) {
+  popup.classList.remove("hidden");
+}
+
+// Botón continuar
+document.getElementById("continueBtn").onclick = () => {
+  popup.classList.add("hidden");
+};
+
+// Botón no volver a mostrar
+document.getElementById("noShowBtn").onclick = () => {
+  localStorage.setItem("noShowNotificationPopup", "1");
+  popup.classList.add("hidden");
+};
+
+
+/* ------------------------------------------
+   3. Navegación sincronizada desde iframe
+-------------------------------------------*/
+
+window.addEventListener("message", e => {
+    if (!e.data.startsWith("navigate:")) return;
+    
+    const newURL = e.data.replace("navigate:", "");
+    history.replaceState({}, "", "?url=" + encodeURIComponent(newURL));
+});
 </script>
 
 </body>
