@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>ChoxyPop App</title>
+
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    overflow: hidden;
+    font-family: Arial, sans-serif;
+    background: #fff;
+  }
+
+  #blogFrame {
+    width: 100vw;
+    height: 100vh;
+    border: none;
+  }
+
+  .hidden { display: none !important; }
+
+  /* ------------------------------
+     Popup General
+  -------------------------------*/
+  #popupWrapper {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    background: rgba(0,0,0,0.45);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    animation: fadeIn .3s ease;
+  }
+  .popup-card {
+    width: 330px;
+    background: #fafafa;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 4px 22px rgba(0,0,0,0.2);
+    animation: slideUp .32s ease;
+    text-align: center;
+  }
+  button {
+    margin-top: 12px;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 10px;
+    font-size: 15px;
+    cursor: pointer;
+    background: #ff4ae8;
+    color: white;
+    width: 100%;
+  }
+  .btn-secondary {
+    background: #ddd;
+    color: #333;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ------------------------------
+     BOTÓN DE CAMPANA
+  -------------------------------*/
+  #notifButton {
+    position: fixed;
+    top: 10px; left: 10px;
+    z-index: 9998;
+    background: #ff4ae8;
+    width: 42px; height: 42px;
+    border-radius: 12px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.25);
+  }
+  #notifButton svg {
+    width: 24px; height: 24px;
+    fill: #fff;
+  }
+
+  /* ------------------------------
+     Popup de Ajustes
+  -------------------------------*/
+  #notifSettingsWrapper {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    background: rgba(0,0,0,0.45);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+  }
+
+  .settings-card {
+    width: 340px;
+    background: #fafafa;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 4px 22px rgba(0,0,0,0.2);
+  }
+
+  .setting-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 12px 0;
+  }
+
+  .info-icon {
+    margin-left: 8px;
+    color: #888;
+    cursor: pointer;
+  }
+
+</style>
+
+<!-- OneSignal -->
+<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+<script>
+  window.OneSignalDeferred = window.OneSignalDeferred || [];
+  OneSignalDeferred.push(async function (OneSignal) {
+    await OneSignal.init({
+      appId: "8977c8b2-fbe0-40c0-81ee-b63a2e84c957",
+      safari_web_id: "web.onesignal.auto.12f40fc9-13d7-4ca9-8e4a-0a7d50f473bf",
+      allowLocalhostAsSecureOrigin: true,
+      autoPrompt: false,
+      notifyButton: { enable: false }
+    });
+  });
+</script>
+</head>
+<body>
+
+<!-- IFRAME del blog -->
+<iframe id="blogFrame" title="ChoxyPop blog"></iframe>
+
+<!-- POPUP INICIAL -->
+<div id="popupWrapper" class="hidden">
+  <div class="popup-card">
+    <h2>¿Quieres suscribirte a las notificaciones?</h2>
+    <p>Si presionas después, podrás activarlas luego desde la app 💖</p>
+    <button id="subscribeInitial">Suscribirse</button>
+    <button id="laterBtn" class="btn-secondary">Después</button>
+  </div>
+</div>
+
+<!-- BOTÓN DE CAMPANA -->
+<div id="notifButton" aria-label="Notificaciones">
+  <svg viewBox="0 0 24 24">
+    <path d="M12 24c1.3 0 2-.7 2-2h-4c0 1.3.7 2 2 2zm6.3-6V11c0-3.5-2.4-6.4-5.5-7.2V3c0-.8-.7-1.5-1.5-1.5S9.8 2.2 9.8 3v.8C6.7 4.6 4.3 7.5 4.3 11v7L2 20v1h20v-1l-2.3-2z"/>
+  </svg>
+</div>
+
+<!-- POPUP AJUSTES -->
+<div id="notifSettingsWrapper" class="hidden">
+  <div class="settings-card">
+    <h2>Ajustes de notificaciones</h2>
+
+    <p id="subStatus">Cargando estado…</p>
+
+    <button id="subscribeFromSettings" class="hidden">Suscribirse</button>
+
+    <div id="prefsArea" class="hidden">
+      <div class="setting-item">
+        <label>Noticias y posts</label>
+        <input type="checkbox" id="chkPosts">
+      </div>
+
+      <div class="setting-item">
+        <label>Mensajes de Choxy</label>
+        <input type="checkbox" id="chkMessages">
+      </div>
+
+      <button id="savePrefs">Guardar preferencias</button>
+    </div>
+
+    <button id="closeSettings" class="btn-secondary">Cerrar</button>
+  </div>
+</div>
+
+<script>
+/* ------------------------------------------
+   1. Cargar iframe
+-------------------------------------------*/
+function loadIframe() {
+  const params = new URLSearchParams(location.search);
+  const targetURL = params.get("url") || "https://blog.choxypop.com";
+  document.getElementById("blogFrame").src = targetURL;
+}
+loadIframe();
+
+/* ------------------------------------------
+   2. POPUP inicial
+-------------------------------------------*/
+const popup = document.getElementById("popupWrapper");
+const subscribeInitial = document.getElementById("subscribeInitial");
+const laterBtn = document.getElementById("laterBtn");
+
+if (!localStorage.getItem("notifPopupDismissed")) {
+  popup.classList.remove("hidden");
+}
+
+subscribeInitial.onclick = async () => {
+  popup.classList.add("hidden");
+  let OneSignal = window.OneSignal;
+  await OneSignal.Slidedown.promptPush(); // muestra el permiso nativo ✓
+};
+
+laterBtn.onclick = () => {
+  popup.classList.add("hidden");
+  localStorage.setItem("notifPopupDismissed", "1");
+};
+
+/* ------------------------------------------
+   3. BOTÓN DE CAMPANA → abrir ajustes
+-------------------------------------------*/
+const notifButton = document.getElementById("notifButton");
+const notifSettingsWrapper = document.getElementById("notifSettingsWrapper");
+const subStatus = document.getElementById("subStatus");
+const subscribeFromSettings = document.getElementById("subscribeFromSettings");
+const prefsArea = document.getElementById("prefsArea");
+
+notifButton.onclick = openSettings;
+document.getElementById("closeSettings").onclick = () => 
+  notifSettingsWrapper.classList.add("hidden");
+
+async function openSettings() {
+  notifSettingsWrapper.classList.remove("hidden");
+
+  const OneSignal = window.OneSignal;
+  const isEnabled = await OneSignal.User.Push.isSubscribed();
+
+  if (!isEnabled) {
+    subStatus.textContent = "No estás suscrito.";
+    subscribeFromSettings.classList.remove("hidden");
+    prefsArea.classList.add("hidden");
+  } else {
+    subStatus.textContent = "Estás suscrito ✔";
+    subscribeFromSettings.classList.add("hidden");
+    prefsArea.classList.remove("hidden");
+
+    const tags = await OneSignal.User.getTags();
+    document.getElementById("chkPosts").checked = tags.posts === "1";
+    document.getElementById("chkMessages").checked = tags.messages === "1";
+  }
+}
+
+/* ------------------------------------------
+   4. Suscribirse desde ajustes
+-------------------------------------------*/
+subscribeFromSettings.onclick = async () => {
+  let OneSignal = window.OneSignal;
+  await OneSignal.Slidedown.promptPush();
+  openSettings(); // refresca
+};
+
+/* ------------------------------------------
+   5. Guardar preferencias (TAGS)
+-------------------------------------------*/
+document.getElementById("savePrefs").onclick = async () => {
+  const OneSignal = window.OneSignal;
+
+  await OneSignal.User.addTags({
+    posts: document.getElementById("chkPosts").checked ? "1" : "0",
+    messages: document.getElementById("chkMessages").checked ? "1" : "0"
+  });
+
+  alert("Preferencias guardadas 💖");
+};
+</script>
+
+</body>
+</html>
