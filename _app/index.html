@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>ChoxyPop App</title>
+<title>ChoxyPop – App</title>
 
 <style>
   html, body {
@@ -13,42 +13,57 @@
     overflow: hidden;
     font-family: Arial, sans-serif;
     background: #fff;
+    -webkit-font-smoothing:antialiased;
   }
 
+  /* Iframe ocupa toda la pantalla */
   #blogFrame {
     width: 100vw;
     height: 100vh;
     border: none;
   }
 
+  /* Utility */
   .hidden { display: none !important; }
+  .sr-only { position: absolute; left:-10000px; top:auto; width:1px; height:1px; overflow:hidden; }
 
-  /* ------------------------------
-     Popup General
-  -------------------------------*/
+  /* Popup (centrado) */
   #popupWrapper {
     position: fixed;
-    top: 0; left: 0;
-    width: 100vw; height: 100vh;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
     background: rgba(0,0,0,0.45);
     display: flex;
     justify-content: center;
     align-items: center;
     z-index: 9999;
     animation: fadeIn .3s ease;
+    padding: 18px;
+    box-sizing: border-box;
   }
+
   .popup-card {
-    width: 330px;
-    background: #fafafa;
-    border-radius: 16px;
+    width: 100%;
+    max-width: 420px;
+    background: #ffffff;
+    border-radius: 14px;
     padding: 20px;
-    box-shadow: 0 4px 22px rgba(0,0,0,0.2);
+    box-shadow: 0 6px 30px rgba(0,0,0,0.25);
     animation: slideUp .32s ease;
     text-align: center;
   }
+
+  .popup-card h2 { margin: 0 0 8px; font-size: 20px; }
+  .popup-card p { margin: 0 0 12px; color: #333; }
+
+  .row { display:flex; gap:10px; }
+  .col { flex:1; }
+
   button {
-    margin-top: 12px;
-    padding: 10px 20px;
+    margin-top: 8px;
+    padding: 10px 14px;
     border: none;
     border-radius: 10px;
     font-size: 15px;
@@ -56,227 +71,564 @@
     background: #ff4ae8;
     color: white;
     width: 100%;
+    box-sizing: border-box;
   }
+
   .btn-secondary {
-    background: #ddd;
+    background: #efefef;
     color: #333;
   }
 
-  @keyframes fadeIn {
-    from { opacity: 0; }
-    to   { opacity: 1; }
-  }
-  @keyframes slideUp {
-    from { opacity: 0; transform: translateY(20px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-
-  /* ------------------------------
-     BOTÓN DE CAMPANA
-  -------------------------------*/
-  #notifButton {
+  /* Bell fixed button (top-left) */
+  #notifyBell {
     position: fixed;
-    top: 10px; left: 10px;
-    z-index: 9998;
-    background: #ff4ae8;
-    width: 42px; height: 42px;
+    top: 12px;
+    left: 12px;
+    z-index: 99999;
+    width: 46px;
+    height: 46px;
     border-radius: 12px;
+    background: rgba(0,0,0,0.7);
+    color: white;
     display: flex;
-    justify-content: center;
     align-items: center;
+    justify-content: center;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.25);
     cursor: pointer;
-    box-shadow: 0 3px 10px rgba(0,0,0,0.25);
+    border: 2px solid rgba(255,255,255,0.08);
   }
-  #notifButton svg {
-    width: 24px; height: 24px;
-    fill: #fff;
-  }
+  #notifyBell svg { width:22px; height:22px; }
 
-  /* ------------------------------
-     Popup de Ajustes
-  -------------------------------*/
-  #notifSettingsWrapper {
+  /* Preferences modal */
+  #prefsWrapper {
     position: fixed;
-    top: 0; left: 0;
-    width: 100vw; height: 100vh;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
     background: rgba(0,0,0,0.45);
-    display: flex;
+    display: none;
     justify-content: center;
     align-items: center;
-    z-index: 9999;
+    z-index: 99998;
+    padding: 18px;
+    box-sizing: border-box;
+  }
+  .prefs-card {
+    width: 100%;
+    max-width: 520px;
+    background: #fff;
+    border-radius: 12px;
+    padding: 18px;
+    box-shadow: 0 6px 28px rgba(0,0,0,0.25);
+  }
+  .prefs-card h3 { margin:0 0 8px; font-size:18px; }
+  .prefs-row { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 0; border-bottom:1px solid #f1f1f1; }
+  .prefs-row:last-child { border-bottom: none; }
+  .prefs-left { display:flex; gap:12px; align-items:center; }
+  .prefs-left .label { font-size:15px; color:#111; }
+  .info-icon { width:18px; height:18px; display:inline-block; border-radius:50%; background:#eee; color:#333; font-size:12px; text-align:center; line-height:18px; cursor:pointer; }
+  .tooltip {
+    position: absolute;
+    display:none;
+    max-width:250px;
+    background:#222;
+    color:#fff;
+    padding:8px 10px;
+    font-size:13px;
+    border-radius:8px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.3);
   }
 
-  .settings-card {
-    width: 340px;
-    background: #fafafa;
-    border-radius: 16px;
-    padding: 20px;
-    box-shadow: 0 4px 22px rgba(0,0,0,0.2);
+  /* Checkbox custom */
+  .switch {
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  input[type="checkbox"]{ width:18px; height:18px; }
+
+  .note { font-size:13px; color:#666; margin-top:10px; }
+
+  /* small screens */
+  @media (max-width:420px) {
+    .popup-card { padding:16px; border-radius:10px; }
+    #notifyBell { width:44px; height:44px; border-radius:10px; left:8px; top:8px; }
+    .prefs-card { padding:14px; border-radius:10px; }
   }
 
-  .setting-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin: 12px 0;
-  }
+  @keyframes fadeIn { from { opacity: 0; } to   { opacity: 1; } }
+  @keyframes slideUp { from { opacity: 0; transform: translateY(18px); } to   { opacity: 1; transform: translateY(0); } }
+
+  /* Small helper for instructing user about browser blocks */
+  .browser-help { margin-top:10px; color:#8a2be2; font-size:13px; }
 </style>
 
-<!-- OneSignal v16 -->
+<!-- OneSignal SDK (Custom Code Setup) -->
 <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
 <script>
   window.OneSignalDeferred = window.OneSignalDeferred || [];
   OneSignalDeferred.push(async function(OneSignal) {
-
+    // Inicializamos con categorías que usaremos
     await OneSignal.init({
       appId: "8977c8b2-fbe0-40c0-81ee-b63a2e84c957",
       safari_web_id: "web.onesignal.auto.12f40fc9-13d7-4ca9-8e4a-0a7d50f473bf",
       allowLocalhostAsSecureOrigin: true,
-      autoPrompt: false,
-      notifyButton: { enable: false }
+      autoResubscribe: true,
+      notifyButton: { enable: false }, // deshabilita el bell por defecto de OneSignal
+      promptOptions: {
+        slidedown: {
+          prompts: [
+            {
+              type: "category",
+              autoPrompt: false,
+              text: {
+                actionMessage: "¿Quieres recibir notificaciones sobre ChoxyPop?",
+                acceptButton: "Permitir",
+                cancelButton: "Cancelar",
+                updateMessage: "Actualiza tus preferencias de notificación",
+                positiveUpdateButton: "Guardar preferencias",
+                negativeUpdateButton: "Cancelar"
+              },
+              delay: { pageViews: 1, timeDelay: 0 },
+              categories: [
+                { tag: "posts", label: "Noticias y posts" },
+                { tag: "messages", label: "Mensajes de Choxy" }
+              ]
+            }
+          ]
+        }
+      }
     });
 
-    // Instancia segura global
-    window.OS = OneSignal;
+    // Escuchamos cambios de permiso y suscripción
+    OneSignal.Notifications.addEventListener("permissionChange", function(permission) {
+      console.log("OneSignal permissionChange:", permission);
+    });
+
+    // Cuando cambia la subscripción push (token, optedIn, etc)
+    OneSignal.User.PushSubscription.addEventListener("change", function(event) {
+      console.log("Push subscription change:", event);
+      // Cuando el usuario queda subscribed, intentamos aplicar tags guardadas
+      tryApplySavedTags(OneSignal);
+    });
+
+    // Exponer OneSignal globalmente para el resto del código (facilita llamadas)
+    window._OneSignal = OneSignal;
   });
+
+  // helper para aplicar tags almacenadas en localStorage (si existe OneSignal)
+  async function tryApplySavedTags(OneSignal) {
+    try {
+      if (!window._OneSignal) return;
+      const optedIn = OneSignal.User.PushSubscription.optedIn;
+      if (!optedIn) return; // si no está suscrito, no setear tags
+      const prefs = JSON.parse(localStorage.getItem("chx_notify_prefs") || "{}");
+      const tags = {};
+      if (prefs.posts) tags.posts = "1"; else tags.posts = "0";
+      if (prefs.messages) tags.messages = "1"; else tags.messages = "0";
+      await OneSignal.User.addTags(tags);
+      console.log("Tags guardados en OneSignal:", tags);
+    } catch (err) { console.warn("No se pudieron aplicar tags:", err); }
+  }
 </script>
+
 </head>
 <body>
 
-<!-- IFRAME del blog -->
+<!-- Iframe del blog (DEJADO tal cual, como pediste) -->
 <iframe id="blogFrame" title="ChoxyPop blog"></iframe>
 
-<!-- POPUP INICIAL -->
-<div id="popupWrapper" class="hidden">
-  <div class="popup-card">
-    <h2>¿Quieres suscribirte a las notificaciones?</h2>
-    <p>Si presionas después, podrás activarlas luego desde la app 💖</p>
-    <button id="subscribeInitial">Suscribirse</button>
-    <button id="laterBtn" class="btn-secondary">Después</button>
+<!-- POPUP inicial -->
+<div id="popupWrapper" class="hidden" aria-hidden="true">
+  <div class="popup-card" role="dialog" aria-modal="true" aria-labelledby="popup-title">
+    <h2 id="popup-title">¿Quieres suscribirte a las notificaciones?</h2>
+    <p>Si presionas "Suscribirse" se mostrará el permiso del navegador. Puedes activar o cambiar categorías luego desde el icono de la campana.</p>
+    <div class="row">
+      <div class="col"><button id="subscribeBtn">Suscribirse</button></div>
+      <div class="col"><button id="laterBtn" class="btn-secondary">Después</button></div>
+    </div>
+    <button id="noShowBtn" class="btn-secondary" style="margin-top:10px;">No volver a mostrar</button>
+    <p class="note">Si tu navegador (ej. Brave o Edge) está configurado para bloquear notificaciones, verás instrucciones tras intentar suscribirte.</p>
   </div>
 </div>
 
-<!-- BOTÓN DE CAMPANA -->
-<div id="notifButton" aria-label="Notificaciones">
-  <svg viewBox="0 0 24 24">
-    <path d="M12 24c1.3 0 2-.7 2-2h-4c0 1.3.7 2 2 2zm6.3-6V11c0-3.5-2.4-6.4-5.5-7.2V3c0-.8-.7-1.5-1.5-1.5S9.8 2.2 9.8 3v.8C6.7 4.6 4.3 7.5 4.3 11v7L2 20v1h20v-1l-2.3-2z"/>
-  </svg>
-</div>
+<!-- Botón campana fijo (siempre visible) -->
+<button id="notifyBell" title="Preferencias de notificaciones" aria-label="Preferencias de notificaciones">
+  <!-- simple icono campana (svg) -->
+  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 22c1.104 0 2-.896 2-2H10c0 1.104.896 2 2 2z" fill="currentColor"/><path d="M18 16v-5c0-3.07-1.639-5.64-4.5-6.32V4a1.5 1.5 0 10-3 0v.68C7.64 5.36 6 7.93 6 11v5l-1.99 2A1 1 0 005 20h14a1 1 0 00.99-1.01L18 16z" fill="currentColor"/></svg>
+</button>
 
-<!-- POPUP AJUSTES -->
-<div id="notifSettingsWrapper" class="hidden">
-  <div class="settings-card">
-    <h2>Ajustes de notificaciones</h2>
+<!-- Preferencias modal -->
+<div id="prefsWrapper" aria-hidden="true">
+  <div class="prefs-card" role="dialog" aria-modal="true" aria-labelledby="prefs-title">
+    <h3 id="prefs-title">Preferencias de notificación</h3>
+    <p style="margin:6px 0 12px;">Configura qué tipo de notificaciones quieres recibir. Recuerda que los cambios se aplican si estás suscrito a notificaciones.</p>
 
-    <p id="subStatus">Cargando estado…</p>
-
-    <button id="subscribeFromSettings" class="hidden">Suscribirse</button>
-
-    <div id="prefsArea" class="hidden">
-      <div class="setting-item">
-        <label>Noticias y posts</label>
-        <input type="checkbox" id="chkPosts">
+    <div style="position:relative;">
+      <div class="prefs-row">
+        <div class="prefs-left">
+          <div>
+            <div class="label">Recibir notificaciones de noticias y posts</div>
+            <div style="font-size:13px;color:#666;">Actualizaciones del sitio y nuevos posts</div>
+          </div>
+          <div style="margin-left:8px;">
+            <span class="info-icon" data-tip="posts" tabindex="0" aria-label="Info posts">i</span>
+          </div>
+        </div>
+        <div class="switch">
+          <input id="chkPosts" type="checkbox" />
+        </div>
       </div>
 
-      <div class="setting-item">
-        <label>Mensajes de Choxy</label>
-        <input type="checkbox" id="chkMessages">
+      <div class="prefs-row">
+        <div class="prefs-left">
+          <div>
+            <div class="label">Recibir mensajes de Choxy</div>
+            <div style="font-size:13px;color:#666;">Mensajes ocasionales para animarte (no esenciales)</div>
+          </div>
+          <div style="margin-left:8px;">
+            <span class="info-icon" data-tip="messages" tabindex="0" aria-label="Info messages">i</span>
+          </div>
+        </div>
+        <div class="switch">
+          <input id="chkMessages" type="checkbox" />
+        </div>
       </div>
-
-      <button id="savePrefs">Guardar preferencias</button>
     </div>
 
-    <button id="closeSettings" class="btn-secondary">Cerrar</button>
+    <div style="display:flex; gap:10px; margin-top:14px;">
+      <button id="savePrefs">Guardar preferencias</button>
+      <button id="closePrefs" class="btn-secondary" style="flex:1;">Cerrar</button>
+    </div>
+
+    <p class="note">Si aún no diste permiso al navegador, al guardar preferencias se intentará solicitarlo (o te indicaremos qué hacer si el navegador lo bloquea).</p>
+
+    <div id="browserHelp" class="browser-help" style="display:none;"></div>
   </div>
 </div>
+
+<!-- Tooltips (global) -->
+<div id="tooltip" class="tooltip" role="status" aria-live="polite"></div>
 
 <script>
 /* ------------------------------------------
-   1. Cargar iframe
+   1. Cargar el blog en el iframe (mantener)
 -------------------------------------------*/
 function loadIframe() {
-  const params = new URLSearchParams(location.search);
-  const targetURL = params.get("url") || "https://blog.choxypop.com";
-  document.getElementById("blogFrame").src = targetURL;
+    const params = new URLSearchParams(location.search);
+    const targetURL = params.get("url") || "https://blog.choxypop.com";
+    document.getElementById("blogFrame").src = targetURL;
 }
 loadIframe();
 
 /* ------------------------------------------
-   2. POPUP inicial
+   2. Popup initial control + localStorage
 -------------------------------------------*/
 const popup = document.getElementById("popupWrapper");
-const subscribeInitial = document.getElementById("subscribeInitial");
+const subscribeBtn = document.getElementById("subscribeBtn");
 const laterBtn = document.getElementById("laterBtn");
+const noShowBtn = document.getElementById("noShowBtn");
 
-if (!localStorage.getItem("notifPopupDismissed"))
+const NEVER_SHOW_KEY = "noShowNotificationPopup";
+const PREFS_KEY = "chx_notify_prefs";
+
+const NEVER_SHOW = localStorage.getItem(NEVER_SHOW_KEY) === "1";
+if (!NEVER_SHOW) {
+  // show popup
   popup.classList.remove("hidden");
-
-subscribeInitial.onclick = async () => {
+  popup.setAttribute("aria-hidden", "false");
+} else {
   popup.classList.add("hidden");
-  localStorage.setItem("notifPopupDismissed", "1");
+  popup.setAttribute("aria-hidden", "true");
+}
 
-  // 🔥 Nuevo método oficial OneSignal v16
-  await window.OS.User.Push.requestPermission();
-};
-
-laterBtn.onclick = () => {
-  popup.classList.add("hidden");
-  localStorage.setItem("notifPopupDismissed", "1");
-};
-
-/* ------------------------------------------
-   3. BOTÓN CAMPANA → AJUSTES
--------------------------------------------*/
-const notifButton = document.getElementById("notifButton");
-const notifSettingsWrapper = document.getElementById("notifSettingsWrapper");
-const subStatus = document.getElementById("subStatus");
-const subscribeFromSettings = document.getElementById("subscribeFromSettings");
-const prefsArea = document.getElementById("prefsArea");
-
-notifButton.onclick = openSettings;
-document.getElementById("closeSettings").onclick = () =>
-  notifSettingsWrapper.classList.add("hidden");
-
-async function openSettings() {
-  notifSettingsWrapper.classList.remove("hidden");
-
-  const OS = window.OS;
-  const isEnabled = await OS.User.Push.isSubscribed();
-
-  if (!isEnabled) {
-    subStatus.textContent = "No estás suscrito.";
-    subscribeFromSettings.classList.remove("hidden");
-    prefsArea.classList.add("hidden");
-  } else {
-    subStatus.textContent = "Estás suscrito ✔";
-    subscribeFromSettings.classList.add("hidden");
-    prefsArea.classList.remove("hidden");
-
-    const tags = await OS.User.getTags();
-    document.getElementById("chkPosts").checked = tags.posts === "1";
-    document.getElementById("chkMessages").checked = tags.messages === "1";
+function safeClick(handler) {
+  let running = false;
+  return (...args) => {
+    if (running) return;
+    running = true;
+    try { handler(...args); }
+    finally { setTimeout(()=> running=false, 400); }
   }
 }
 
-/* ------------------------------------------
-   4. Suscribirse desde ajustes
--------------------------------------------*/
-subscribeFromSettings.onclick = async () => {
-  await window.OS.User.Push.requestPermission();
-  openSettings();
-};
+laterBtn.addEventListener("click", safeClick(() => {
+  popup.classList.add("hidden");
+  popup.setAttribute("aria-hidden", "true");
+  // don't change NEVER_SHOW, just hide once
+}));
+
+noShowBtn.addEventListener("click", safeClick(() => {
+  localStorage.setItem(NEVER_SHOW_KEY, "1");
+  popup.classList.add("hidden");
+  popup.setAttribute("aria-hidden", "true");
+}));
 
 /* ------------------------------------------
-   5. Guardar preferencias (tags)
+   3. Bell y preferencias UI
 -------------------------------------------*/
-document.getElementById("savePrefs").onclick = async () => {
-  await window.OS.User.addTags({
-    posts: document.getElementById("chkPosts").checked ? "1" : "0",
-    messages: document.getElementById("chkMessages").checked ? "1" : "0"
+const notifyBell = document.getElementById("notifyBell");
+const prefsWrapper = document.getElementById("prefsWrapper");
+const closePrefs = document.getElementById("closePrefs");
+const savePrefs = document.getElementById("savePrefs");
+const chkPosts = document.getElementById("chkPosts");
+const chkMessages = document.getElementById("chkMessages");
+const browserHelp = document.getElementById("browserHelp");
+
+notifyBell.addEventListener("click", () => {
+  openPrefs();
+});
+closePrefs.addEventListener("click", () => {
+  closePrefsModal();
+});
+
+function openPrefs() {
+  // cargar prefs locales
+  const prefs = JSON.parse(localStorage.getItem(PREFS_KEY) || '{"posts":true,"messages":true}');
+  chkPosts.checked = !!prefs.posts;
+  chkMessages.checked = !!prefs.messages;
+  prefsWrapper.style.display = "flex";
+  prefsWrapper.setAttribute("aria-hidden", "false");
+  // comprobar estado de permiso y mostrar ayuda si bloqueado
+  showBrowserHelp();
+}
+
+function closePrefsModal() {
+  prefsWrapper.style.display = "none";
+  prefsWrapper.setAttribute("aria-hidden", "true");
+  browserHelp.style.display = "none";
+}
+
+/* Tooltips */
+const tooltip = document.getElementById("tooltip");
+document.querySelectorAll(".info-icon").forEach(icon => {
+  const tip = icon.getAttribute("data-tip");
+  let text = "";
+  if (tip === "posts") text = "Notificaciones sobre nuevos posts del blog y actualizaciones del sitio.";
+  if (tip === "messages") text = "Mensajes ocasionales y motivacionales de Choxy para que vuelvas a la app.";
+  icon.addEventListener("mouseenter", (e)=> showTooltip(e, text));
+  icon.addEventListener("mouseleave", hideTooltip);
+  icon.addEventListener("focus", (e)=> showTooltip(e, text));
+  icon.addEventListener("blur", hideTooltip);
+  icon.addEventListener("click", (e)=> {
+    // click also toggles tooltip (useful en móviles)
+    if (tooltip.style.display === "block") hideTooltip(); else showTooltip(e, text);
   });
+});
+function showTooltip(e, text) {
+  tooltip.textContent = text;
+  tooltip.style.display = "block";
+  const rect = e.target.getBoundingClientRect();
+  const left = Math.min(window.innerWidth - 260, rect.left + rect.width + 8);
+  tooltip.style.left = left + "px";
+  tooltip.style.top = (rect.top + window.scrollY - 8) + "px";
+}
+function hideTooltip() { tooltip.style.display = "none"; }
 
-  alert("Preferencias guardadas 💖");
-};
+/* ------------------------------------------
+   4. Subscribe flow (desde popup o prefs)
+   - Lógica: al pedir suscribirse, pedimos el Slidedown category prompt de OneSignal
+   - Tras la respuesta del navegador, guardamos/aplicamos tags según preferencias locales
+-------------------------------------------*/
+async function requestSubscriptionFlow() {
+  // First ensure the SDK is ready
+  if (!window._OneSignal) {
+    alert("El servicio de notificaciones aún no está listo. Intenta de nuevo en unos segundos.");
+    return;
+  }
+  const OneSignal = window._OneSignal;
+
+  // Primero, guardar las preferencias locales si existen en modal
+  const currentPrefs = {
+    posts: chkPosts.checked,
+    messages: chkMessages.checked
+  };
+  localStorage.setItem(PREFS_KEY, JSON.stringify(currentPrefs));
+
+  // If browser doesn't support push, inform user
+  const supported = OneSignal.Notifications.isPushSupported();
+  if (!supported) {
+    alert("Las notificaciones push no están soportadas en este navegador/dispositivo.");
+    return;
+  }
+
+  // Si ya fue denegado por el usuario en el navegador, no podremos mostrar diálogo nativo.
+  // Detectamos permiso actual
+  const currentPermission = OneSignal.Notifications.permission; // true/false (means allowed or not)
+  // Note: permission==false can mean 'default' or 'denied' depending on browser. OneSignal exposes only boolean.
+  // We'll attempt to show the slidedown prompt (category) which triggers native prompt if needed, and pass {force:true}
+  try {
+    // Llamamos al Slidedown category prompt - esto abre el slidedown UI y luego el prompt nativo
+    if (OneSignal.Slidedown && OneSignal.Slidedown.promptPushCategories) {
+      // .promptPushCategories respeta back-off; forzar porque la acción vino de click del usuario
+      OneSignal.Slidedown.promptPushCategories({ force: true });
+    } else if (OneSignal.Slidedown && OneSignal.Slidedown.promptPush) {
+      OneSignal.Slidedown.promptPush({ force: true });
+    } else {
+      // fallback: intentar optIn que intenta mostrar el permiso nativo
+      if (OneSignal.User && OneSignal.User.PushSubscription && OneSignal.User.PushSubscription.optIn) {
+        OneSignal.User.PushSubscription.optIn();
+      } else {
+        alert("No se pudo iniciar el flujo de permisos en este navegador (método no disponible).");
+      }
+    }
+
+    // Añadimos listener para detectar cuando se cambie permiso (Allow/Block)
+    const onPerm = function(permission) {
+      // permission puede ser true si aceptó
+      if (permission) {
+        // aplicar tags guardados
+        tryApplyTagsFromLocal();
+      } else {
+        // si fue bloqueado, mostramos instrucciones
+        showBrowserHelp(true);
+      }
+      // remover listener si existe
+      try { OneSignal.Notifications.removeEventListener("permissionChange", onPerm); } catch(e){}
+    };
+    try { OneSignal.Notifications.addEventListener("permissionChange", onPerm); } catch(e){}
+  } catch (err) {
+    console.error("Error al iniciar solicitud de suscripción:", err);
+    alert("Ocurrió un error al pedir permiso de notificaciones. Revisa la consola para más detalles.");
+  }
+}
+
+async function tryApplyTagsFromLocal() {
+  if (!window._OneSignal) return;
+  const OneSignal = window._OneSignal;
+  const prefs = JSON.parse(localStorage.getItem(PREFS_KEY) || "{}");
+  const tags = {};
+  tags.posts = prefs.posts ? "1" : "0";
+  tags.messages = prefs.messages ? "1" : "0";
+  try {
+    await OneSignal.User.addTags(tags);
+    console.log("Tags aplicados:", tags);
+    showBrowserHelp(false, "¡Listo! Has sido suscrito y tus preferencias fueron guardadas.");
+  } catch (err) {
+    console.warn("No se pudieron aplicar tags:", err);
+  }
+}
+
+/* Botones */
+subscribeBtn.addEventListener("click", safeClick(async () => {
+  // ocultar popup y lanzar flujo
+  popup.classList.add("hidden");
+  popup.setAttribute("aria-hidden", "true");
+  await requestSubscriptionFlow();
+}));
+
+// "Después"
+laterBtn.addEventListener("click", safeClick(() => {
+  popup.classList.add("hidden");
+  popup.setAttribute("aria-hidden", "true");
+}));
+
+// "No volver a mostrar"
+document.getElementById("noShowBtn").addEventListener("click", safeClick(() => {
+  localStorage.setItem(NEVER_SHOW_KEY, "1");
+  popup.classList.add("hidden");
+  popup.setAttribute("aria-hidden", "true");
+}));
+
+// Guardar preferencias desde modal
+savePrefs.addEventListener("click", safeClick(async () => {
+  const prefs = { posts: chkPosts.checked, messages: chkMessages.checked };
+  localStorage.setItem(PREFS_KEY, JSON.stringify(prefs));
+  // intentar aplicar tags si está suscrito; si no, iniciar flujo para pedir permiso
+  if (window._OneSignal) {
+    const OneSignal = window._OneSignal;
+    const isSupported = OneSignal.Notifications.isPushSupported();
+    if (!isSupported) {
+      alert("Tu navegador no soporta push notifications.");
+      return;
+    }
+    const optedIn = OneSignal.User.PushSubscription.optedIn;
+    if (optedIn) {
+      await tryApplyTagsFromLocal();
+      showBrowserHelp(false, "Preferencias guardadas.");
+    } else {
+      // si no está suscrito, iniciar el flujo para solicitar permiso
+      await requestSubscriptionFlow();
+    }
+  } else {
+    alert("El servicio de notificaciones aún se está inicializando. Intenta de nuevo.");
+  }
+}));
+
+/* ------------------------------------------
+   5. Ayuda sobre Brave / Edge / bloqueos
+   - Nota honesta: no hay forma de evadir bloqueo del navegador
+-------------------------------------------*/
+function showBrowserHelp(blocked = false, customMsg = null) {
+  // mostrar mensajes útiles para el usuario según navegador y estado
+  const ua = navigator.userAgent.toLowerCase();
+  let browser = "navegador";
+  if (ua.indexOf("brave") !== -1) browser = "Brave";
+  else if (ua.indexOf("edg/") !== -1) browser = "Microsoft Edge";
+  else if (ua.indexOf("chrome") !== -1) browser = "Chrome";
+  else if (ua.indexOf("firefox") !== -1) browser = "Firefox";
+  else if (ua.indexOf("safari") !== -1 && ua.indexOf("chrome") === -1) browser = "Safari";
+
+  if (customMsg) {
+    browserHelp.textContent = customMsg;
+    browserHelp.style.display = "block";
+    return;
+  }
+
+  // if permission is blocked or unsupported, provide steps
+  if (!window._OneSignal) {
+    browserHelp.textContent = "Inicializando servicio de notificaciones...";
+    browserHelp.style.display = "block";
+    return;
+  }
+  const OneSignal = window._OneSignal;
+  const supported = OneSignal.Notifications.isPushSupported();
+  if (!supported) {
+    browserHelp.textContent = "Este navegador/dispositivo no soporta notificaciones web.";
+    browserHelp.style.display = "block";
+    return;
+  }
+
+  const permission = OneSignal.Notifications.permission; // true = allowed
+  if (permission) {
+    browserHelp.style.display = "none";
+    return;
+  }
+
+  // permission false -> puede ser default o denied.
+  if (blocked) {
+    // Si explícitamente bloqueado (por event), dar pasos para deshacer bloqueo
+    browserHelp.innerHTML = `Parece que has bloqueado las notificaciones en ${browser}. Para activarlas, abre la configuración del sitio en tu navegador (normalmente clic en el candado al lado de la barra de direcciones) y permite <strong>Notificaciones</strong>.`;
+  } else {
+    browserHelp.innerHTML = `No has permitido notificaciones todavía en ${browser}. Pulsa "Suscribirse" y acepta el permiso. Si tu navegador tiene bloqueo (ej. Brave), revisa sus ajustes de privacidad si no aparece el prompt.`;
+  }
+  browserHelp.style.display = "block";
+}
+
+/* ------------------------------------------
+   6. Sincronizar tags cuando el SDK ya está listo
+-------------------------------------------*/
+(function waitForOneSignalReady() {
+  // Intentar aplicar tags si OneSignal ya está inicializado
+  if (window._OneSignal) {
+    tryApplySavedTags(window._OneSignal);
+  } else {
+    setTimeout(waitForOneSignalReady, 400);
+  }
+})();
+
+/* ------------------------------------------
+   7. Comunicación con iframe (mantener)
+-------------------------------------------*/
+window.addEventListener("message", e => {
+    // por seguridad puedes validar origen:
+    // if (e.origin !== "https://blog.choxypop.com") return;
+    if (!e.data || typeof e.data !== "string") return;
+    if (!e.data.startsWith("navigate:")) return;
+    const newURL = e.data.replace("navigate:", "");
+    history.replaceState({}, "", "?url=" + encodeURIComponent(newURL));
+});
 </script>
 
 </body>
