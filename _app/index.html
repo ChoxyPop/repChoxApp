@@ -120,20 +120,14 @@
     justify-content: space-between;
     margin: 12px 0;
   }
-
-  .info-icon {
-    margin-left: 8px;
-    color: #888;
-    cursor: pointer;
-  }
-
 </style>
 
-<!-- OneSignal -->
+<!-- OneSignal v16 -->
 <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
 <script>
   window.OneSignalDeferred = window.OneSignalDeferred || [];
-  OneSignalDeferred.push(async function (OneSignal) {
+  OneSignalDeferred.push(async function(OneSignal) {
+
     await OneSignal.init({
       appId: "8977c8b2-fbe0-40c0-81ee-b63a2e84c957",
       safari_web_id: "web.onesignal.auto.12f40fc9-13d7-4ca9-8e4a-0a7d50f473bf",
@@ -141,6 +135,9 @@
       autoPrompt: false,
       notifyButton: { enable: false }
     });
+
+    // Instancia segura global
+    window.OS = OneSignal;
   });
 </script>
 </head>
@@ -211,14 +208,15 @@ const popup = document.getElementById("popupWrapper");
 const subscribeInitial = document.getElementById("subscribeInitial");
 const laterBtn = document.getElementById("laterBtn");
 
-if (!localStorage.getItem("notifPopupDismissed")) {
+if (!localStorage.getItem("notifPopupDismissed"))
   popup.classList.remove("hidden");
-}
 
 subscribeInitial.onclick = async () => {
   popup.classList.add("hidden");
-  let OneSignal = window.OneSignal;
-  await OneSignal.Slidedown.promptPush(); // muestra el permiso nativo ✓
+  localStorage.setItem("notifPopupDismissed", "1");
+
+  // 🔥 Nuevo método oficial OneSignal v16
+  await window.OS.User.Push.requestPermission();
 };
 
 laterBtn.onclick = () => {
@@ -227,7 +225,7 @@ laterBtn.onclick = () => {
 };
 
 /* ------------------------------------------
-   3. BOTÓN DE CAMPANA → abrir ajustes
+   3. BOTÓN CAMPANA → AJUSTES
 -------------------------------------------*/
 const notifButton = document.getElementById("notifButton");
 const notifSettingsWrapper = document.getElementById("notifSettingsWrapper");
@@ -236,14 +234,14 @@ const subscribeFromSettings = document.getElementById("subscribeFromSettings");
 const prefsArea = document.getElementById("prefsArea");
 
 notifButton.onclick = openSettings;
-document.getElementById("closeSettings").onclick = () => 
+document.getElementById("closeSettings").onclick = () =>
   notifSettingsWrapper.classList.add("hidden");
 
 async function openSettings() {
   notifSettingsWrapper.classList.remove("hidden");
 
-  const OneSignal = window.OneSignal;
-  const isEnabled = await OneSignal.User.Push.isSubscribed();
+  const OS = window.OS;
+  const isEnabled = await OS.User.Push.isSubscribed();
 
   if (!isEnabled) {
     subStatus.textContent = "No estás suscrito.";
@@ -254,7 +252,7 @@ async function openSettings() {
     subscribeFromSettings.classList.add("hidden");
     prefsArea.classList.remove("hidden");
 
-    const tags = await OneSignal.User.getTags();
+    const tags = await OS.User.getTags();
     document.getElementById("chkPosts").checked = tags.posts === "1";
     document.getElementById("chkMessages").checked = tags.messages === "1";
   }
@@ -264,18 +262,15 @@ async function openSettings() {
    4. Suscribirse desde ajustes
 -------------------------------------------*/
 subscribeFromSettings.onclick = async () => {
-  let OneSignal = window.OneSignal;
-  await OneSignal.Slidedown.promptPush();
-  openSettings(); // refresca
+  await window.OS.User.Push.requestPermission();
+  openSettings();
 };
 
 /* ------------------------------------------
-   5. Guardar preferencias (TAGS)
+   5. Guardar preferencias (tags)
 -------------------------------------------*/
 document.getElementById("savePrefs").onclick = async () => {
-  const OneSignal = window.OneSignal;
-
-  await OneSignal.User.addTags({
+  await window.OS.User.addTags({
     posts: document.getElementById("chkPosts").checked ? "1" : "0",
     messages: document.getElementById("chkMessages").checked ? "1" : "0"
   });
