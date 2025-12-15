@@ -1,0 +1,17 @@
+{
+  "name": "repchoxapp",
+  "version": "1.0.0",
+  "description": "",
+  "main": "OneSignalSDK.sw.js",
+  "scripts": {
+    "build:app": "tailwindcss -c ./_app/tailwind.config.js -i ./_app/styles.css -o ./_app/main.css --watch"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.1.18",
+    "flyonui": "^2.4.1",
+    "tailwindcss": "^4.1.18"
+  }
+}

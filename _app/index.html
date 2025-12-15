@@ -1,635 +1,121 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>ChoxyPop – App</title>
+  <meta charset="UTF-8">
+  <title>ChoxyPop App</title>
 
-<style>
-  html, body {
-    margin: 0;
-    padding: 0;
-    height: 100%;
-    overflow: hidden;
-    font-family: Arial, sans-serif;
-    background: #fff;
-    -webkit-font-smoothing:antialiased;
-  }
+  <!-- Tailwind CDN -->
+<link rel="stylesheet" href="/_app/main.css">
 
-  /* Iframe ocupa toda la pantalla */
-  #blogFrame {
-    width: 100vw;
-    height: 100vh;
-    border: none;
-  }
-
-  /* Utility */
-  .hidden { display: none !important; }
-  .sr-only { position: absolute; left:-10000px; top:auto; width:1px; height:1px; overflow:hidden; }
-
-  /* Popup (centrado) */
-  #popupWrapper {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: rgba(0,0,0,0.45);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 9999;
-    animation: fadeIn .3s ease;
-    padding: 18px;
-    box-sizing: border-box;
-  }
-
-  .popup-card {
-    width: 100%;
-    max-width: 420px;
-    background: #ffffff;
-    border-radius: 14px;
-    padding: 20px;
-    box-shadow: 0 6px 30px rgba(0,0,0,0.25);
-    animation: slideUp .32s ease;
-    text-align: center;
-  }
-
-  .popup-card h2 { margin: 0 0 8px; font-size: 20px; }
-  .popup-card p { margin: 0 0 12px; color: #333; }
-
-  .row { display:flex; gap:10px; }
-  .col { flex:1; }
-
-  button {
-    margin-top: 8px;
-    padding: 10px 14px;
-    border: none;
-    border-radius: 10px;
-    font-size: 15px;
-    cursor: pointer;
-    background: #ff4ae8;
-    color: white;
-    width: 100%;
-    box-sizing: border-box;
-  }
-
-  .btn-secondary {
-    background: #efefef;
-    color: #333;
-  }
-
-  /* Bell fixed button (top-left) */
-  #notifyBell {
-    position: fixed;
-    top: 12px;
-    left: 12px;
-    z-index: 99999;
-    width: 46px;
-    height: 46px;
-    border-radius: 12px;
-    background: rgba(0,0,0,0.7);
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 6px 18px rgba(0,0,0,0.25);
-    cursor: pointer;
-    border: 2px solid rgba(255,255,255,0.08);
-  }
-  #notifyBell svg { width:22px; height:22px; }
-
-  /* Preferences modal */
-  #prefsWrapper {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: rgba(0,0,0,0.45);
-    display: none;
-    justify-content: center;
-    align-items: center;
-    z-index: 99998;
-    padding: 18px;
-    box-sizing: border-box;
-  }
-  .prefs-card {
-    width: 100%;
-    max-width: 520px;
-    background: #fff;
-    border-radius: 12px;
-    padding: 18px;
-    box-shadow: 0 6px 28px rgba(0,0,0,0.25);
-  }
-  .prefs-card h3 { margin:0 0 8px; font-size:18px; }
-  .prefs-row { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 0; border-bottom:1px solid #f1f1f1; }
-  .prefs-row:last-child { border-bottom: none; }
-  .prefs-left { display:flex; gap:12px; align-items:center; }
-  .prefs-left .label { font-size:15px; color:#111; }
-  .info-icon { width:18px; height:18px; display:inline-block; border-radius:50%; background:#eee; color:#333; font-size:12px; text-align:center; line-height:18px; cursor:pointer; }
-  .tooltip {
-    position: absolute;
-    display:none;
-    max-width:250px;
-    background:#222;
-    color:#fff;
-    padding:8px 10px;
-    font-size:13px;
-    border-radius:8px;
-    box-shadow: 0 6px 20px rgba(0,0,0,0.3);
-  }
-
-  /* Checkbox custom */
-  .switch {
-    display:flex;
-    align-items:center;
-    gap:8px;
-  }
-  input[type="checkbox"]{ width:18px; height:18px; }
-
-  .note { font-size:13px; color:#666; margin-top:10px; }
-
-  /* small screens */
-  @media (max-width:420px) {
-    .popup-card { padding:16px; border-radius:10px; }
-    #notifyBell { width:44px; height:44px; border-radius:10px; left:8px; top:8px; }
-    .prefs-card { padding:14px; border-radius:10px; }
-  }
-
-  @keyframes fadeIn { from { opacity: 0; } to   { opacity: 1; } }
-  @keyframes slideUp { from { opacity: 0; transform: translateY(18px); } to   { opacity: 1; transform: translateY(0); } }
-
-  /* Small helper for instructing user about browser blocks */
-  .browser-help { margin-top:10px; color:#8a2be2; font-size:13px; }
-</style>
-
-<!-- OneSignal SDK (Custom Code Setup) -->
-<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
-<script>
-  window.OneSignalDeferred = window.OneSignalDeferred || [];
-  OneSignalDeferred.push(async function(OneSignal) {
-    // Inicializamos con categorías que usaremos
-    await OneSignal.init({
-      appId: "8977c8b2-fbe0-40c0-81ee-b63a2e84c957",
-      safari_web_id: "web.onesignal.auto.12f40fc9-13d7-4ca9-8e4a-0a7d50f473bf",
-      allowLocalhostAsSecureOrigin: true,
-      autoResubscribe: true,
-      notifyButton: { enable: false }, // deshabilita el bell por defecto de OneSignal
-      promptOptions: {
-        slidedown: {
-          prompts: [
-            {
-              type: "category",
-              autoPrompt: false,
-              text: {
-                actionMessage: "¿Quieres recibir notificaciones sobre ChoxyPop?",
-                acceptButton: "Permitir",
-                cancelButton: "Cancelar",
-                updateMessage: "Actualiza tus preferencias de notificación",
-                positiveUpdateButton: "Guardar preferencias",
-                negativeUpdateButton: "Cancelar"
-              },
-              delay: { pageViews: 1, timeDelay: 0 },
-              categories: [
-                { tag: "posts", label: "Noticias y posts" },
-                { tag: "messages", label: "Mensajes de Choxy" }
-              ]
-            }
-          ]
-        }
-      }
+  <!-- OneSignal -->
+  <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+  <script>
+    window.OneSignalDeferred = window.OneSignalDeferred || [];
+    OneSignalDeferred.push(async function (OneSignal) {
+      await OneSignal.init({
+        appId: "8977c8b2-fbe0-40c0-81ee-b63a2e84c957",
+        allowLocalhostAsSecureOrigin: true
+      });
     });
-
-    // Escuchamos cambios de permiso y suscripción
-    OneSignal.Notifications.addEventListener("permissionChange", function(permission) {
-      console.log("OneSignal permissionChange:", permission);
-    });
-
-    // Cuando cambia la subscripción push (token, optedIn, etc)
-    OneSignal.User.PushSubscription.addEventListener("change", function(event) {
-      console.log("Push subscription change:", event);
-      // Cuando el usuario queda subscribed, intentamos aplicar tags guardadas
-      tryApplySavedTags(OneSignal);
-    });
-
-    // Exponer OneSignal globalmente para el resto del código (facilita llamadas)
-    window._OneSignal = OneSignal;
-  });
-
-  // helper para aplicar tags almacenadas en localStorage (si existe OneSignal)
-  async function tryApplySavedTags(OneSignal) {
-    try {
-      if (!window._OneSignal) return;
-      const optedIn = OneSignal.User.PushSubscription.optedIn;
-      if (!optedIn) return; // si no está suscrito, no setear tags
-      const prefs = JSON.parse(localStorage.getItem("chx_notify_prefs") || "{}");
-      const tags = {};
-      if (prefs.posts) tags.posts = "1"; else tags.posts = "0";
-      if (prefs.messages) tags.messages = "1"; else tags.messages = "0";
-      await OneSignal.User.addTags(tags);
-      console.log("Tags guardados en OneSignal:", tags);
-    } catch (err) { console.warn("No se pudieron aplicar tags:", err); }
-  }
-</script>
-
+  </script>
 </head>
-<body>
 
-<!-- Iframe del blog (DEJADO tal cual, como pediste) -->
-<iframe id="blogFrame" title="ChoxyPop blog"></iframe>
+<body class="overflow-hidden">
 
-<!-- POPUP inicial -->
-<div id="popupWrapper" class="hidden" aria-hidden="true">
-  <div class="popup-card" role="dialog" aria-modal="true" aria-labelledby="popup-title">
-    <h2 id="popup-title">¿Quieres suscribirte a las notificaciones?</h2>
-    <p>Si presionas "Suscribirse" se mostrará el permiso del navegador. Puedes activar o cambiar categorías luego desde el icono de la campana.</p>
-    <div class="row">
-      <div class="col"><button id="subscribeBtn">Suscribirse</button></div>
-      <div class="col"><button id="laterBtn" class="btn-secondary">Después</button></div>
-    </div>
-    <button id="noShowBtn" class="btn-secondary" style="margin-top:10px;">No volver a mostrar</button>
-    <p class="note">Si tu navegador (ej. Brave o Edge) está configurado para bloquear notificaciones, verás instrucciones tras intentar suscribirte.</p>
+<div class="flex flex-col-reverse items-center justify-center w-screen h-screen text-gray-800 bg-gray-100 sm:flex-row">
+
+  <!-- BARRA -->
+  <div class="flex items-center justify-around w-full h-16 flex-shrink-0 overflow-hidden text-gray-600 bg-white shadow-lg sm:flex-col sm:pt-4 sm:w-16 sm:h-full">
+
+    <!-- BACK / LOGO -->
+    <a class="items-center justify-center hidden w-10 h-10 bg-sky-100 rounded-full sm:flex hover:bg-sky-200" href="#">
+      <svg class="w-6 h-6 stroke-current text-sky-600"
+           xmlns="http://www.w3.org/2000/svg"
+           fill="none"
+           viewBox="0 0 24 24"
+           stroke="currentColor">
+        <path stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+              d="M9 15 3 9m0 0 6-6M3 9h12a6 6 0 0 1 0 12h-3" />
+      </svg>
+    </a>
+
+    <!-- INICIO -->
+    <a data-page="secciones/inicio.html"
+       class="relative flex items-center justify-center w-12 h-12 rounded sm:w-full sm:rounded-none sm:mt-12 hover:text-sky-600 hover:bg-sky-100"
+       href="#">
+      <svg class="w-6 h-6 stroke-current"
+           xmlns="http://www.w3.org/2000/svg"
+           fill="none"
+           viewBox="0 0 24 24"
+           stroke="currentColor">
+        <path stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+              d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
+      </svg>
+    </a>
+
+    <!-- CHAT -->
+    <a data-page="secciones/chat.html"
+       class="relative flex items-center justify-center w-12 h-12 rounded sm:w-full sm:rounded-none hover:text-sky-600 hover:bg-sky-100"
+       href="#">
+      <svg class="w-6 h-6 stroke-current"
+           xmlns="http://www.w3.org/2000/svg"
+           fill="none"
+           viewBox="0 0 24 24"
+           stroke="currentColor">
+        <path stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+              d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 0 1 .865-.501 48.172 48.172 0 0 0 3.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018Z" />
+      </svg>
+    </a>
+
+    <!-- LOGROS -->
+    <a data-page="secciones/logros.html"
+       class="relative flex items-center justify-center w-12 h-12 rounded sm:w-full sm:rounded-none hover:text-sky-600 hover:bg-sky-100"
+       href="#">
+      <svg class="w-6 h-6 stroke-current"
+           xmlns="http://www.w3.org/2000/svg"
+           fill="none"
+           viewBox="0 0 24 24"
+           stroke="currentColor">
+        <path stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M16.5 18.75h-9m9 0a3 3 0 0 1 3 3h-15a3 3 0 0 1 3-3m9 0v-3.375c0-.621-.503-1.125-1.125-1.125h-.871M7.5 18.75v-3.375c0-.621.504-1.125 1.125-1.125h.872m5.007 0H9.497m5.007 0a7.454 7.454 0 0 1-.982-3.172M9.497 14.25a7.454 7.454 0 0 0 .981-3.172M5.25 4.236c-.982.143-1.954.317-2.916.52A6.003 6.003 0 0 0 7.73 9.728M5.25 4.236V4.5c0 2.108.966 3.99 2.48 5.228M5.25 4.236V2.721C7.456 2.41 9.71 2.25 12 2.25c2.291 0 4.545.16 6.75.47v1.516M7.73 9.728a6.726 6.726 0 0 0 2.748 1.35m8.272-6.842V4.5c0 2.108-.966 3.99-2.48 5.228m2.48-5.492a46.32 46.32 0 0 1 2.916.52 6.003 6.003 0 0 1-5.395 4.972m0 0a6.726 6.726 0 0 1-2.749 1.35m0 0a6.772 6.772 0 0 1-3.044 0" />
+      </svg>
+    </a>
+
+    <!-- NOTIFICACIONES -->
+    <a data-page="secciones/notificaciones.html"
+       class="relative flex items-center justify-center w-12 h-12 rounded sm:w-full sm:rounded-none hover:text-sky-600 hover:bg-sky-100"
+       href="#">
+      <svg class="w-6 h-6 stroke-current"
+           xmlns="http://www.w3.org/2000/svg"
+           fill="none"
+           viewBox="0 0 24 24"
+           stroke="currentColor">
+        <path stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+              d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+      </svg>
+    </a>
+
+    <!-- AJUSTES -->
+    <a data-page="secciones/ajustes.html"
+       class="relative flex items-center justify-center w-12 h-12 rounded sm:mt-auto sm:w-full sm:rounded-none hover:text-sky-600 hover:bg-sky-100"
+       href="#">
+      <svg class="w-6 h-6 stroke-current"
+           xmlns="http://www.w3.org/2000/svg"
+           fill="none"
+           viewBox="0 0 24 24"
+           stroke="currentColor">
+        <path stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28Z" />
+        <path stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+      </svg>
+    </a>
+
   </div>
+
+  <!-- CONTENIDO -->
+  <div id="content" class="flex flex-col flex-grow sm:h-full h-0 w-full overflow-auto"></div>
+
 </div>
 
-<!-- Botón campana fijo (siempre visible) -->
-<button id="notifyBell" title="Preferencias de notificaciones" aria-label="Preferencias de notificaciones">
-  <!-- simple icono campana (svg) -->
-  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 22c1.104 0 2-.896 2-2H10c0 1.104.896 2 2 2z" fill="currentColor"/><path d="M18 16v-5c0-3.07-1.639-5.64-4.5-6.32V4a1.5 1.5 0 10-3 0v.68C7.64 5.36 6 7.93 6 11v5l-1.99 2A1 1 0 005 20h14a1 1 0 00.99-1.01L18 16z" fill="currentColor"/></svg>
-</button>
-
-<!-- Preferencias modal -->
-<div id="prefsWrapper" aria-hidden="true">
-  <div class="prefs-card" role="dialog" aria-modal="true" aria-labelledby="prefs-title">
-    <h3 id="prefs-title">Preferencias de notificación</h3>
-    <p style="margin:6px 0 12px;">Configura qué tipo de notificaciones quieres recibir. Recuerda que los cambios se aplican si estás suscrito a notificaciones.</p>
-
-    <div style="position:relative;">
-      <div class="prefs-row">
-        <div class="prefs-left">
-          <div>
-            <div class="label">Recibir notificaciones de noticias y posts</div>
-            <div style="font-size:13px;color:#666;">Actualizaciones del sitio y nuevos posts</div>
-          </div>
-          <div style="margin-left:8px;">
-            <span class="info-icon" data-tip="posts" tabindex="0" aria-label="Info posts">i</span>
-          </div>
-        </div>
-        <div class="switch">
-          <input id="chkPosts" type="checkbox" />
-        </div>
-      </div>
-
-      <div class="prefs-row">
-        <div class="prefs-left">
-          <div>
-            <div class="label">Recibir mensajes de Choxy</div>
-            <div style="font-size:13px;color:#666;">Mensajes ocasionales para animarte (no esenciales)</div>
-          </div>
-          <div style="margin-left:8px;">
-            <span class="info-icon" data-tip="messages" tabindex="0" aria-label="Info messages">i</span>
-          </div>
-        </div>
-        <div class="switch">
-          <input id="chkMessages" type="checkbox" />
-        </div>
-      </div>
-    </div>
-
-    <div style="display:flex; gap:10px; margin-top:14px;">
-      <button id="savePrefs">Guardar preferencias</button>
-      <button id="closePrefs" class="btn-secondary" style="flex:1;">Cerrar</button>
-    </div>
-
-    <p class="note">Si aún no diste permiso al navegador, al guardar preferencias se intentará solicitarlo (o te indicaremos qué hacer si el navegador lo bloquea).</p>
-
-    <div id="browserHelp" class="browser-help" style="display:none;"></div>
-  </div>
-</div>
-
-<!-- Tooltips (global) -->
-<div id="tooltip" class="tooltip" role="status" aria-live="polite"></div>
-
-<script>
-/* ------------------------------------------
-   1. Cargar el blog en el iframe (mantener)
--------------------------------------------*/
-function loadIframe() {
-    const params = new URLSearchParams(location.search);
-    const targetURL = params.get("url") || "https://blog.choxypop.com";
-    document.getElementById("blogFrame").src = targetURL;
-}
-loadIframe();
-
-/* ------------------------------------------
-   2. Popup initial control + localStorage
--------------------------------------------*/
-const popup = document.getElementById("popupWrapper");
-const subscribeBtn = document.getElementById("subscribeBtn");
-const laterBtn = document.getElementById("laterBtn");
-const noShowBtn = document.getElementById("noShowBtn");
-
-const NEVER_SHOW_KEY = "noShowNotificationPopup";
-const PREFS_KEY = "chx_notify_prefs";
-
-const NEVER_SHOW = localStorage.getItem(NEVER_SHOW_KEY) === "1";
-if (!NEVER_SHOW) {
-  // show popup
-  popup.classList.remove("hidden");
-  popup.setAttribute("aria-hidden", "false");
-} else {
-  popup.classList.add("hidden");
-  popup.setAttribute("aria-hidden", "true");
-}
-
-function safeClick(handler) {
-  let running = false;
-  return (...args) => {
-    if (running) return;
-    running = true;
-    try { handler(...args); }
-    finally { setTimeout(()=> running=false, 400); }
-  }
-}
-
-laterBtn.addEventListener("click", safeClick(() => {
-  popup.classList.add("hidden");
-  popup.setAttribute("aria-hidden", "true");
-  // don't change NEVER_SHOW, just hide once
-}));
-
-noShowBtn.addEventListener("click", safeClick(() => {
-  localStorage.setItem(NEVER_SHOW_KEY, "1");
-  popup.classList.add("hidden");
-  popup.setAttribute("aria-hidden", "true");
-}));
-
-/* ------------------------------------------
-   3. Bell y preferencias UI
--------------------------------------------*/
-const notifyBell = document.getElementById("notifyBell");
-const prefsWrapper = document.getElementById("prefsWrapper");
-const closePrefs = document.getElementById("closePrefs");
-const savePrefs = document.getElementById("savePrefs");
-const chkPosts = document.getElementById("chkPosts");
-const chkMessages = document.getElementById("chkMessages");
-const browserHelp = document.getElementById("browserHelp");
-
-notifyBell.addEventListener("click", () => {
-  openPrefs();
-});
-closePrefs.addEventListener("click", () => {
-  closePrefsModal();
-});
-
-function openPrefs() {
-  // cargar prefs locales
-  const prefs = JSON.parse(localStorage.getItem(PREFS_KEY) || '{"posts":true,"messages":true}');
-  chkPosts.checked = !!prefs.posts;
-  chkMessages.checked = !!prefs.messages;
-  prefsWrapper.style.display = "flex";
-  prefsWrapper.setAttribute("aria-hidden", "false");
-  // comprobar estado de permiso y mostrar ayuda si bloqueado
-  showBrowserHelp();
-}
-
-function closePrefsModal() {
-  prefsWrapper.style.display = "none";
-  prefsWrapper.setAttribute("aria-hidden", "true");
-  browserHelp.style.display = "none";
-}
-
-/* Tooltips */
-const tooltip = document.getElementById("tooltip");
-document.querySelectorAll(".info-icon").forEach(icon => {
-  const tip = icon.getAttribute("data-tip");
-  let text = "";
-  if (tip === "posts") text = "Notificaciones sobre nuevos posts del blog y actualizaciones del sitio.";
-  if (tip === "messages") text = "Mensajes ocasionales y motivacionales de Choxy para que vuelvas a la app.";
-  icon.addEventListener("mouseenter", (e)=> showTooltip(e, text));
-  icon.addEventListener("mouseleave", hideTooltip);
-  icon.addEventListener("focus", (e)=> showTooltip(e, text));
-  icon.addEventListener("blur", hideTooltip);
-  icon.addEventListener("click", (e)=> {
-    // click also toggles tooltip (useful en móviles)
-    if (tooltip.style.display === "block") hideTooltip(); else showTooltip(e, text);
-  });
-});
-function showTooltip(e, text) {
-  tooltip.textContent = text;
-  tooltip.style.display = "block";
-  const rect = e.target.getBoundingClientRect();
-  const left = Math.min(window.innerWidth - 260, rect.left + rect.width + 8);
-  tooltip.style.left = left + "px";
-  tooltip.style.top = (rect.top + window.scrollY - 8) + "px";
-}
-function hideTooltip() { tooltip.style.display = "none"; }
-
-/* ------------------------------------------
-   4. Subscribe flow (desde popup o prefs)
-   - Lógica: al pedir suscribirse, pedimos el Slidedown category prompt de OneSignal
-   - Tras la respuesta del navegador, guardamos/aplicamos tags según preferencias locales
--------------------------------------------*/
-async function requestSubscriptionFlow() {
-  // First ensure the SDK is ready
-  if (!window._OneSignal) {
-    alert("El servicio de notificaciones aún no está listo. Intenta de nuevo en unos segundos.");
-    return;
-  }
-  const OneSignal = window._OneSignal;
-
-  // Primero, guardar las preferencias locales si existen en modal
-  const currentPrefs = {
-    posts: chkPosts.checked,
-    messages: chkMessages.checked
-  };
-  localStorage.setItem(PREFS_KEY, JSON.stringify(currentPrefs));
-
-  // If browser doesn't support push, inform user
-  const supported = OneSignal.Notifications.isPushSupported();
-  if (!supported) {
-    alert("Las notificaciones push no están soportadas en este navegador/dispositivo.");
-    return;
-  }
-
-  // Si ya fue denegado por el usuario en el navegador, no podremos mostrar diálogo nativo.
-  // Detectamos permiso actual
-  const currentPermission = OneSignal.Notifications.permission; // true/false (means allowed or not)
-  // Note: permission==false can mean 'default' or 'denied' depending on browser. OneSignal exposes only boolean.
-  // We'll attempt to show the slidedown prompt (category) which triggers native prompt if needed, and pass {force:true}
-  try {
-    // Llamamos al Slidedown category prompt - esto abre el slidedown UI y luego el prompt nativo
-    if (OneSignal.Slidedown && OneSignal.Slidedown.promptPushCategories) {
-      // .promptPushCategories respeta back-off; forzar porque la acción vino de click del usuario
-      OneSignal.Slidedown.promptPushCategories({ force: true });
-    } else if (OneSignal.Slidedown && OneSignal.Slidedown.promptPush) {
-      OneSignal.Slidedown.promptPush({ force: true });
-    } else {
-      // fallback: intentar optIn que intenta mostrar el permiso nativo
-      if (OneSignal.User && OneSignal.User.PushSubscription && OneSignal.User.PushSubscription.optIn) {
-        OneSignal.User.PushSubscription.optIn();
-      } else {
-        alert("No se pudo iniciar el flujo de permisos en este navegador (método no disponible).");
-      }
-    }
-
-    // Añadimos listener para detectar cuando se cambie permiso (Allow/Block)
-    const onPerm = function(permission) {
-      // permission puede ser true si aceptó
-      if (permission) {
-        // aplicar tags guardados
-        tryApplyTagsFromLocal();
-      } else {
-        // si fue bloqueado, mostramos instrucciones
-        showBrowserHelp(true);
-      }
-      // remover listener si existe
-      try { OneSignal.Notifications.removeEventListener("permissionChange", onPerm); } catch(e){}
-    };
-    try { OneSignal.Notifications.addEventListener("permissionChange", onPerm); } catch(e){}
-  } catch (err) {
-    console.error("Error al iniciar solicitud de suscripción:", err);
-    alert("Ocurrió un error al pedir permiso de notificaciones. Revisa la consola para más detalles.");
-  }
-}
-
-async function tryApplyTagsFromLocal() {
-  if (!window._OneSignal) return;
-  const OneSignal = window._OneSignal;
-  const prefs = JSON.parse(localStorage.getItem(PREFS_KEY) || "{}");
-  const tags = {};
-  tags.posts = prefs.posts ? "1" : "0";
-  tags.messages = prefs.messages ? "1" : "0";
-  try {
-    await OneSignal.User.addTags(tags);
-    console.log("Tags aplicados:", tags);
-    showBrowserHelp(false, "¡Listo! Has sido suscrito y tus preferencias fueron guardadas.");
-  } catch (err) {
-    console.warn("No se pudieron aplicar tags:", err);
-  }
-}
-
-/* Botones */
-subscribeBtn.addEventListener("click", safeClick(async () => {
-  // ocultar popup y lanzar flujo
-  popup.classList.add("hidden");
-  popup.setAttribute("aria-hidden", "true");
-  await requestSubscriptionFlow();
-}));
-
-// "Después"
-laterBtn.addEventListener("click", safeClick(() => {
-  popup.classList.add("hidden");
-  popup.setAttribute("aria-hidden", "true");
-}));
-
-// "No volver a mostrar"
-document.getElementById("noShowBtn").addEventListener("click", safeClick(() => {
-  localStorage.setItem(NEVER_SHOW_KEY, "1");
-  popup.classList.add("hidden");
-  popup.setAttribute("aria-hidden", "true");
-}));
-
-// Guardar preferencias desde modal
-savePrefs.addEventListener("click", safeClick(async () => {
-  const prefs = { posts: chkPosts.checked, messages: chkMessages.checked };
-  localStorage.setItem(PREFS_KEY, JSON.stringify(prefs));
-  // intentar aplicar tags si está suscrito; si no, iniciar flujo para pedir permiso
-  if (window._OneSignal) {
-    const OneSignal = window._OneSignal;
-    const isSupported = OneSignal.Notifications.isPushSupported();
-    if (!isSupported) {
-      alert("Tu navegador no soporta push notifications.");
-      return;
-    }
-    const optedIn = OneSignal.User.PushSubscription.optedIn;
-    if (optedIn) {
-      await tryApplyTagsFromLocal();
-      showBrowserHelp(false, "Preferencias guardadas.");
-    } else {
-      // si no está suscrito, iniciar el flujo para solicitar permiso
-      await requestSubscriptionFlow();
-    }
-  } else {
-    alert("El servicio de notificaciones aún se está inicializando. Intenta de nuevo.");
-  }
-}));
-
-/* ------------------------------------------
-   5. Ayuda sobre Brave / Edge / bloqueos
-   - Nota honesta: no hay forma de evadir bloqueo del navegador
--------------------------------------------*/
-function showBrowserHelp(blocked = false, customMsg = null) {
-  // mostrar mensajes útiles para el usuario según navegador y estado
-  const ua = navigator.userAgent.toLowerCase();
-  let browser = "navegador";
-  if (ua.indexOf("brave") !== -1) browser = "Brave";
-  else if (ua.indexOf("edg/") !== -1) browser = "Microsoft Edge";
-  else if (ua.indexOf("chrome") !== -1) browser = "Chrome";
-  else if (ua.indexOf("firefox") !== -1) browser = "Firefox";
-  else if (ua.indexOf("safari") !== -1 && ua.indexOf("chrome") === -1) browser = "Safari";
-
-  if (customMsg) {
-    browserHelp.textContent = customMsg;
-    browserHelp.style.display = "block";
-    return;
-  }
-
-  // if permission is blocked or unsupported, provide steps
-  if (!window._OneSignal) {
-    browserHelp.textContent = "Inicializando servicio de notificaciones...";
-    browserHelp.style.display = "block";
-    return;
-  }
-  const OneSignal = window._OneSignal;
-  const supported = OneSignal.Notifications.isPushSupported();
-  if (!supported) {
-    browserHelp.textContent = "Este navegador/dispositivo no soporta notificaciones web.";
-    browserHelp.style.display = "block";
-    return;
-  }
-
-  const permission = OneSignal.Notifications.permission; // true = allowed
-  if (permission) {
-    browserHelp.style.display = "none";
-    return;
-  }
-
-  // permission false -> puede ser default o denied.
-  if (blocked) {
-    // Si explícitamente bloqueado (por event), dar pasos para deshacer bloqueo
-    browserHelp.innerHTML = `Parece que has bloqueado las notificaciones en ${browser}. Para activarlas, abre la configuración del sitio en tu navegador (normalmente clic en el candado al lado de la barra de direcciones) y permite <strong>Notificaciones</strong>.`;
-  } else {
-    browserHelp.innerHTML = `No has permitido notificaciones todavía en ${browser}. Pulsa "Suscribirse" y acepta el permiso. Si tu navegador tiene bloqueo (ej. Brave), revisa sus ajustes de privacidad si no aparece el prompt.`;
-  }
-  browserHelp.style.display = "block";
-}
-
-/* ------------------------------------------
-   6. Sincronizar tags cuando el SDK ya está listo
--------------------------------------------*/
-(function waitForOneSignalReady() {
-  // Intentar aplicar tags si OneSignal ya está inicializado
-  if (window._OneSignal) {
-    tryApplySavedTags(window._OneSignal);
-  } else {
-    setTimeout(waitForOneSignalReady, 400);
-  }
-})();
-
-/* ------------------------------------------
-   7. Comunicación con iframe (mantener)
--------------------------------------------*/
-window.addEventListener("message", e => {
-    // por seguridad puedes validar origen:
-    // if (e.origin !== "https://blog.choxypop.com") return;
-    if (!e.data || typeof e.data !== "string") return;
-    if (!e.data.startsWith("navigate:")) return;
-    const newURL = e.data.replace("navigate:", "");
-    history.replaceState({}, "", "?url=" + encodeURIComponent(newURL));
-});
-</script>
+<script src="main.js"></script>
 
 </body>
 </html>

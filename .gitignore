@@ -1,0 +1,10 @@
+# Node
+node_modules/
+npm-debug.log*
+package-lock.json
+
+# Tailwind cache
+.tailwindcss/
+
+# OS
+.DS_Store
