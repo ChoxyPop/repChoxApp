@@ -1,0 +1,234 @@
+/* ===============================
+   Chattable – Estilo moderno
+   WhatsApp / Messenger-like
+   =============================== */
+
+:root {
+  --body-fg-color: #222;
+  --body-bg-color: #ece5dd;
+
+  --sent-message-bubble-bg-color: #dcf8c6;
+  --sent-message-bubble-fg-color: #111;
+  --sent-message-bubble-border-color: #cdebb0;
+
+  --recieved-message-bubble-bg-color: #ffffff;
+  --recieved-message-bubble-fg-color: #111;
+  --recieved-message-bubble-border-color: #dddddd;
+
+  --notification-sfx: none;
+}
+
+/* Fondo */
+body {
+  color: var(--body-fg-color);
+  background: var(--body-bg-color);
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+/* Wrapper */
+.msgWrapper {
+  display: flex;
+  align-items: flex-end;
+  overflow: clip;
+}
+
+/* Enviados a la derecha */
+.msgWrapper:has(.sent) {
+  flex-direction: row-reverse;
+}
+
+/* Avatar (FIJO, SIN HOVER) */
+.msgWrapper:has(.sent, .recieved)::before {
+  content: "";
+  width: 32px;
+  height: 32px;
+  background-image: url(/media/default-user.webp);
+  background-size: cover;
+  background-position: center;
+  border-radius: 50%;
+  margin: 2px 10px;
+  transition: none !important;
+}
+
+/* Contenedor mensaje */
+.allMessages {
+  font-size: 10.5pt;
+  max-width: 70%;
+  padding: 7px 10px;
+  border-radius: 10px;
+  position: relative;
+  margin: 4px 0;
+  border: 1px solid transparent;
+  word-wrap: break-word;
+
+  /* Animación SOLO del mensaje */
+  animation: msgIn 120ms ease-out;
+}
+
+@keyframes msgIn {
+  from {
+    transform: translateY(2px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Emojis grandes */
+.allMessages.containsOnlyEmojis .emoji {
+  height: 46px;
+}
+
+/* Mensajes enviados */
+.sent {
+  background: var(--sent-message-bubble-bg-color);
+  color: var(--sent-message-bubble-fg-color);
+  border-color: var(--sent-message-bubble-border-color);
+}
+
+/* Cola enviada */
+.sent::after {
+  content: "";
+  position: absolute;
+  right: -6px;
+  bottom: 6px;
+  width: 10px;
+  height: 10px;
+  background: inherit;
+  transform: rotate(45deg);
+  border-right: 1px solid var(--sent-message-bubble-border-color);
+  border-top: 1px solid var(--sent-message-bubble-border-color);
+}
+
+/* Mensajes recibidos */
+.recieved {
+  background: var(--recieved-message-bubble-bg-color);
+  color: var(--recieved-message-bubble-fg-color);
+  border-color: var(--recieved-message-bubble-border-color);
+}
+
+/* Cola recibida */
+.recieved::after {
+  content: "";
+  position: absolute;
+  left: -6px;
+  bottom: 6px;
+  width: 10px;
+  height: 10px;
+  background: inherit;
+  transform: rotate(45deg);
+  border-left: 1px solid var(--recieved-message-bubble-border-color);
+  border-bottom: 1px solid var(--recieved-message-bubble-border-color);
+}
+
+/* Usuario */
+.senderInfo {
+  font-size: 8.5pt;
+  font-style: normal;
+  font-weight: 600;
+  color: #075e54;
+  margin-bottom: 2px;
+  line-height: 1.2;
+}
+
+/* Insignia de verificación */
+.senderInfo:has(.mod, .owner, .beta)::after {
+  content: "";
+  width: 10pt;
+  height: 10pt;
+  margin-left: 4px;          /* ← separación correcta */
+  vertical-align: text-top; /* ← alineación natural */
+  background-image: url(/media/verified.png);
+  background-size: cover;
+  display: inline-block;
+}
+
+/* Avatar personalizado SOLO para mí */
+.msgWrapper:has(.allMessages.sent[uid="y1yAxrO0PQe6lJi6nKX837Mguru2"])::before {
+  background-image: url("https://raw.githubusercontent.com/ChoxyPop/contenido/main/profile.webp");
+}
+
+/* Hora al hover (SIN mover nada) */
+.sent:hover::before,
+.recieved:hover::before {
+  content: attr(time);
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  font-size: 8pt;
+  color: #555;
+  font-style: italic;
+}
+
+/* Mensajes privados */
+.allMessages.pm::before {
+  content: "Mensaje privado";
+  position: absolute;
+  top: -14px;
+  right: 0;
+  font-size: 8pt;
+  font-weight: bold;
+  color: #c0392b;
+}
+
+/* Links */
+.msgBody a {
+  color: inherit !important;
+  text-decoration: underline;
+}
+
+/* Input */
+#input,
+#nameEntry,
+#textInput {
+  background: #f0f0f0;
+  color: #111;
+  border: none;
+}
+
+/* Placeholder español */
+#input:empty::before {
+  content: "Escribe un mensaje…";
+  color: #777;
+}
+
+/* Emoji tray */
+#emojiTray {
+  background: #f7f7f7;
+  border-top: 1px solid #ccc;
+}
+
+.emojiInGrid {
+  font-size: 22px;
+  transition: transform 120ms ease;
+}
+
+.emojiInGrid:hover {
+  transform: scale(1.15);
+}
+
+/* Limpieza */
+#timestamp,
+.badge,
+.devTag {
+  display: none;
+}
+
+/* Sin banner */
+#top_banner {
+  display: none;
+}
+
+/* Reply */
+#replyBanner {
+  background-color: var(--sent-message-bubble-border-color);
+  font-size: 9pt;
+}
+
+/* Settings */
+#settings {
+  filter: invert(100%) drop-shadow(0 0 2px #000);
+}
+

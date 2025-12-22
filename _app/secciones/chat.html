@@ -1,0 +1,91 @@
+<div class="flex flex-col h-full w-full">
+
+  <!-- TABS -->
+  <nav
+    class="tabs space-x-1 overflow-x-auto border-b bg-white px-2 py-2"
+    role="tablist"
+    aria-label="Chat sections"
+  >
+    <button
+      class="grow btn btn-text active-tab:bg-primary active-tab:text-white hover:text-primary hover:bg-primary/20 tab-active"
+      data-tab-target="chat-grupal"
+      type="button"
+    >
+      Chat grupal
+    </button>
+
+    <button
+      class="grow btn btn-text active-tab:bg-primary active-tab:text-white hover:text-primary hover:bg-primary/20"
+      data-tab-target="chat-soporte"
+      type="button"
+    >
+      Soporte
+    </button>
+
+    <button
+      class="grow btn btn-text active-tab:bg-primary active-tab:text-white hover:text-primary hover:bg-primary/20"
+      data-tab-target="chat-post"
+      type="button"
+    >
+      Publicar post
+    </button>
+  </nav>
+
+  <!-- CONTENIDO -->
+  <div class="flex-1 relative">
+
+    <!-- CHAT GRUPAL -->
+    <div
+      id="chat-grupal"
+      class="absolute inset-0"
+    >
+      <iframe
+        src="https://iframe.chat/embed?chat=ChoxyPopApp"
+        class="w-full h-full border-0"
+        allow="clipboard-write; fullscreen"
+      ></iframe>
+    </div>
+
+    <!-- CHAT SOPORTE -->
+    <div
+      id="chat-soporte"
+      class="absolute inset-0 hidden"
+    >
+      <iframe
+        src="https://tawk.to/chat/694945e01f0ade19740a2c9f/1jd33htek"
+        class="w-full h-full border-0"
+        allow="clipboard-write; fullscreen"
+      ></iframe>
+    </div>
+
+    <!-- FORMULARIO POST -->
+    <div
+      id="chat-post"
+      class="absolute inset-0 hidden"
+    >
+      <iframe
+        src="https://tally.so/r/mYxZQX"
+        class="w-full h-full border-0"
+        allow="clipboard-write; fullscreen"
+      ></iframe>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  const tabButtons = document.querySelectorAll('[data-tab-target]');
+  const tabPanels = document.querySelectorAll('[id^="chat-"]');
+
+  tabButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      // botones
+      tabButtons.forEach(b => b.classList.remove('tab-active'));
+      btn.classList.add('tab-active');
+
+      // paneles
+      tabPanels.forEach(p => p.classList.add('hidden'));
+      document.getElementById(btn.dataset.tabTarget).classList.remove('hidden');
+    });
+  });
+</script>

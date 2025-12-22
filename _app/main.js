@@ -9,30 +9,33 @@ function loadPage(page) {
     });
 }
 
-// cargar sección inicial
-loadPage('secciones/inicio.html');
-document.querySelector('[data-page="secciones/inicio.html"]').click();
+function setActiveButton(activeBtn) {
+  navButtons.forEach(btn => {
+    btn.classList.remove('text-sky-600');
+    const ind = btn.querySelector('.nav-indicator');
+    if (ind) ind.remove();
+  });
 
+  activeBtn.classList.add('text-sky-600');
 
+  const indicator = document.createElement('div');
+  indicator.className =
+    'nav-indicator absolute top-0 w-2 h-3 sm:h-full sm:left-0 sm:-ml-1 bg-sky-600 rounded';
+
+  activeBtn.appendChild(indicator);
+}
+
+// listeners
 navButtons.forEach(btn => {
   btn.addEventListener('click', e => {
     e.preventDefault();
 
-    // quitar indicador anterior
-    navButtons.forEach(b => {
-      b.classList.remove('text-sky-600');
-      const ind = b.querySelector('.nav-indicator');
-      if (ind) ind.remove();
-    });
-
-    // activar actual
-    btn.classList.add('text-sky-600');
-
-    const indicator = document.createElement('div');
-    indicator.className =
-      'nav-indicator absolute top-0 w-2 h-3 sm:h-full sm:left-0 sm:-ml-1 bg-sky-600 rounded';
-    btn.appendChild(indicator);
-
+    setActiveButton(btn);
     loadPage(btn.dataset.page);
   });
 });
+
+// 👉 estado inicial
+const homeBtn = document.querySelector('[data-page="secciones/inicio.html"]');
+setActiveButton(homeBtn);
+loadPage('secciones/inicio.html');

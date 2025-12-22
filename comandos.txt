@@ -3,3 +3,6 @@ npm run build:app
 
 # Modo desarrollo (watch)
 npm run dev:app
+
+# Servidor local limpio (SIN live-server)
+npx serve . -l 5500
